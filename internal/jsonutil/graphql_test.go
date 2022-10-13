@@ -1,7 +1,7 @@
 package jsonutil_test
 
 import (
-	"github.com/shurcooL/graphql"
+	"github.com/caelus/graphql_go_client"
 	"reflect"
 	"testing"
 	"time"
