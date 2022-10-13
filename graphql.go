@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/shurcooL/graphql/internal/jsonutil"
+	"github.com/nobody05/graphql_go_client/internal/jsonutil"
 	"golang.org/x/net/context/ctxhttp"
 )
 

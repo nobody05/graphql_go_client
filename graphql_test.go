@@ -2,13 +2,12 @@ package graphql_test
 
 import (
 	"context"
+	"github.com/nobody05/graphql_go_client/graphql"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/shurcooL/graphql"
 )
 
 func TestClient_Query_partialDataWithErrorResponse(t *testing.T) {

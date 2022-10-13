@@ -1,12 +1,12 @@
 package jsonutil_test
 
 import (
+	"github.com/shurcooL/graphql"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/shurcooL/graphql"
-	"github.com/shurcooL/graphql/internal/jsonutil"
+	"github.com/nobody05/graphql_go_client/internal/jsonutil"
 )
 
 func TestUnmarshalGraphQL(t *testing.T) {
