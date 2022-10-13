@@ -2,7 +2,7 @@ package graphql_test
 
 import (
 	"context"
-	"github.com/nobody05/graphql_go_client/graphql"
+	"github.com/nobody05/graphql_go_client"
 	"io"
 	"io/ioutil"
 	"net/http"
