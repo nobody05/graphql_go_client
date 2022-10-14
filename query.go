@@ -10,6 +10,11 @@ import (
 	"github.com/nobody05/graphql_go_client/ident"
 )
 
+func constructQueryNoQueryKeyword(v interface{}) string {
+	query := query(v)
+	return query
+}
+
 func constructQuery(v interface{}, variables map[string]interface{}) string {
 	query := query(v)
 	if len(variables) > 0 {
@@ -117,7 +122,7 @@ func writeQuery(w io.Writer, t reflect.Type, inline bool) {
 				if ok {
 					io.WriteString(w, value)
 				} else {
-					io.WriteString(w, ident.ParseMixedCaps(f.Name).ToLowerCamelCase())
+					io.WriteString(w, ident.ParseMixedCaps(f.Name).ToUnderline())
 				}
 			}
 			writeQuery(w, f.Type, inlineField)

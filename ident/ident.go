@@ -118,6 +118,26 @@ func ParseScreamingSnakeCase(name string) Name {
 // Name is an identifier name, broken up into individual words.
 type Name []string
 
+func (n Name) ToUnderline() string {
+	for i, word := range n {
+		if strings.EqualFold(word, "IDs") { // Special case, plural form of ID initialism.
+			n[i] = "IDs"
+			continue
+		}
+		if initialism, ok := isInitialism(word); ok {
+			n[i] = initialism
+			continue
+		}
+		if brand, ok := isBrand(word); ok {
+			n[i] = brand
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(word)
+		n[i] = string(unicode.ToLower(r)) + strings.ToLower(word[size:])
+	}
+	return strings.Join(n, "_")
+}
+
 // ToMixedCaps expresses identifer name in MixedCaps naming convention.
 //
 // E.g., "ClientMutationID".
@@ -179,7 +199,8 @@ func isTwoInitialisms(word string) (string, string, bool) {
 // initialisms is the set of initialisms in the MixedCaps naming convention.
 // Only add entries that are highly unlikely to be non-initialisms.
 // For instance, "ID" is fine (Freudian code is rare), but "AND" is not.
-var initialisms = map[string]struct{}{
+var initialisms = map[string]struct{}{}
+var initialismsOld = map[string]struct{}{
 	"ACL":   {},
 	"API":   {},
 	"ASCII": {},

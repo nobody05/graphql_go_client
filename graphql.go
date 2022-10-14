@@ -33,8 +33,8 @@ func NewClient(url string, httpClient *http.Client) *Client {
 // Query executes a single GraphQL query request,
 // with a query derived from q, populating the response into it.
 // q should be a pointer to struct that corresponds to the GraphQL schema.
-func (c *Client) Query(ctx context.Context, q interface{}, variables map[string]interface{}) error {
-	return c.do(ctx, queryOperation, q, variables)
+func (c *Client) Query(ctx context.Context, q interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
+	return c.doForWbyDc(ctx, queryOperation, q, variables)
 }
 
 // Mutate executes a single GraphQL mutation request,
@@ -42,6 +42,51 @@ func (c *Client) Query(ctx context.Context, q interface{}, variables map[string]
 // m should be a pointer to struct that corresponds to the GraphQL schema.
 func (c *Client) Mutate(ctx context.Context, m interface{}, variables map[string]interface{}) error {
 	return c.do(ctx, mutationOperation, m, variables)
+}
+
+func (c *Client) doForWbyDc(ctx context.Context, op operationType, v interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
+	var query string
+	switch op {
+	case queryOperation:
+		query = constructQueryNoQueryKeyword(v)
+	case mutationOperation:
+		query = constructMutation(v, variables)
+	}
+
+	var buf bytes.Buffer
+	buf.WriteString(query)
+
+	resp, err := ctxhttp.Post(ctx, c.httpClient, c.url, "application/json", &buf)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("non-200 OK status code: %v body: %q", resp.Status, body)
+	}
+
+	result, _ := ioutil.ReadAll(resp.Body)
+
+	var resultMap map[string]interface{}
+	err = json.Unmarshal(result, &resultMap)
+	if err != nil {
+		return nil, err
+	}
+	if err, exit := resultMap["error"]; exit {
+		errs := &errors{}
+		err := json.Unmarshal([]byte(err.(string)), errs)
+		if err != nil {
+			return nil, err
+		}
+		return nil, errs
+	}
+
+	if body, exit := resultMap["data"]; exit {
+		return body.(map[string]interface{}), nil
+	}
+	return nil, nil
 }
 
 // do executes a single GraphQL operation.
