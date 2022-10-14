@@ -55,10 +55,6 @@ func (c *Client) doForWbyDc(ctx context.Context, op operationType, fn string, v 
 
 	var buf bytes.Buffer
 	buf.WriteString(query)
-
-	println("query")
-	println(query)
-
 	resp, err := ctxhttp.Post(ctx, c.httpClient, c.url, "application/json", &buf)
 	if err != nil {
 		return nil, err
