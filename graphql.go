@@ -33,8 +33,8 @@ func NewClient(url string, httpClient *http.Client) *Client {
 // Query executes a single GraphQL query request,
 // with a query derived from q, populating the response into it.
 // q should be a pointer to struct that corresponds to the GraphQL schema.
-func (c *Client) Query(ctx context.Context, q interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
-	return c.doForWbyDc(ctx, queryOperation, q, variables)
+func (c *Client) Query(ctx context.Context, fn string, q interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
+	return c.doForWbyDc(ctx, queryOperation, fn, q, variables)
 }
 
 // Mutate executes a single GraphQL mutation request,
@@ -44,17 +44,20 @@ func (c *Client) Mutate(ctx context.Context, m interface{}, variables map[string
 	return c.do(ctx, mutationOperation, m, variables)
 }
 
-func (c *Client) doForWbyDc(ctx context.Context, op operationType, v interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
+func (c *Client) doForWbyDc(ctx context.Context, op operationType, fn string, v interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
 	var query string
 	switch op {
 	case queryOperation:
-		query = constructQueryNoQueryKeyword(v)
+		query = constructQueryNoQueryKeyword(fn, v, variables)
 	case mutationOperation:
 		query = constructMutation(v, variables)
 	}
 
 	var buf bytes.Buffer
 	buf.WriteString(query)
+
+	println("query")
+	println(query)
 
 	resp, err := ctxhttp.Post(ctx, c.httpClient, c.url, "application/json", &buf)
 	if err != nil {

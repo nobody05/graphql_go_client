@@ -10,9 +10,12 @@ import (
 	"github.com/nobody05/graphql_go_client/ident"
 )
 
-func constructQueryNoQueryKeyword(v interface{}) string {
+func constructQueryNoQueryKeyword(fn string, v interface{}, variables map[string]interface{}) string {
 	query := query(v)
-	return query
+	if len(variables) > 0 {
+		return queryArguments(variables) + query
+	}
+	return "{" + fn + query + "}"
 }
 
 func constructQuery(v interface{}, variables map[string]interface{}) string {
