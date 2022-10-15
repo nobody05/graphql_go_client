@@ -69,13 +69,15 @@ func (c *Client) doForWbyDc(ctx context.Context, op operationType, fn string, v 
 	result, _ := ioutil.ReadAll(resp.Body)
 
 	var resultMap map[string]interface{}
+	var resultData map[string]interface{}
 	err = json.Unmarshal(result, &resultMap)
 	if err != nil {
 		return nil, err
 	}
-	if err, exit := resultMap["error"]; exit {
+	if err, exit := resultMap["errors"]; exit {
 		errs := &errors{}
-		err := json.Unmarshal([]byte(err.(string)), errs)
+		errStr, _ := json.Marshal(err)
+		err := json.Unmarshal(errStr, errs)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +85,9 @@ func (c *Client) doForWbyDc(ctx context.Context, op operationType, fn string, v 
 	}
 
 	if body, exit := resultMap["data"]; exit {
-		return body.(map[string]interface{}), nil
+		dataStr, _ := json.Marshal(body)
+		json.Unmarshal(dataStr, &resultData)
+		return resultData, nil
 	}
 	return nil, nil
 }
