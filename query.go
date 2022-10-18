@@ -6,6 +6,7 @@ import (
 	"io"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/nobody05/graphql_go_client/ident"
 )
@@ -125,7 +126,17 @@ func writeQuery(w io.Writer, t reflect.Type, inline bool) {
 				if ok {
 					io.WriteString(w, value)
 				} else {
-					io.WriteString(w, ident.ParseMixedCaps(f.Name).ToUnderline())
+					jsonVal, ok := f.Tag.Lookup("json")
+					if ok {
+						if strings.Contains(jsonVal, ",") {
+							jsonValArr := strings.Split(jsonVal, ",")
+							io.WriteString(w, jsonValArr[0])
+						} else {
+							io.WriteString(w, jsonVal)
+						}
+					} else {
+						io.WriteString(w, ident.ParseMixedCaps(f.Name).ToUnderline())
+					}
 				}
 			}
 			writeQuery(w, f.Type, inlineField)
