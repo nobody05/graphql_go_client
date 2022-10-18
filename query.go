@@ -3,12 +3,11 @@ package graphql
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/nobody05/graphql_go_client/ident"
 	"io"
 	"reflect"
 	"sort"
 	"strings"
-
-	"github.com/nobody05/graphql_go_client/ident"
 )
 
 func constructQueryNoQueryKeyword(fn string, v interface{}, variables map[string]interface{}) string {
@@ -126,16 +125,20 @@ func writeQuery(w io.Writer, t reflect.Type, inline bool) {
 				if ok {
 					io.WriteString(w, value)
 				} else {
-					jsonVal, ok := f.Tag.Lookup("json")
-					if ok {
-						if strings.Contains(jsonVal, ",") {
-							jsonValArr := strings.Split(jsonVal, ",")
-							io.WriteString(w, jsonValArr[0])
-						} else {
-							io.WriteString(w, jsonVal)
-						}
+					dcVal, ok := f.Tag.Lookup("dc")
+					if ok && dcVal == "omit_request" {
 					} else {
-						io.WriteString(w, ident.ParseMixedCaps(f.Name).ToUnderline())
+						jsonVal, ok := f.Tag.Lookup("json")
+						if ok {
+							if strings.Contains(jsonVal, ",") {
+								jsonValArr := strings.Split(jsonVal, ",")
+								io.WriteString(w, jsonValArr[0])
+							} else {
+								io.WriteString(w, jsonVal)
+							}
+						} else {
+							io.WriteString(w, ident.ParseMixedCaps(f.Name).ToUnderline())
+						}
 					}
 				}
 			}
